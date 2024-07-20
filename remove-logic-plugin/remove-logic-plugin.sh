@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# This script is used to remove audio plugins from Logic Pro on macOS.
+# It provides a user-friendly interface to select and remove plugins.
+# The script supports both dialog-based and manual input methods.
+
+# Variables for repeated paths
+...
+#!/bin/bash
+
 # Variables for repeated paths
 AU_COMPONENTS_SYSTEM="/Library/Audio/Plug-Ins/Components"
 AU_COMPONENTS_USER="$HOME/Library/Audio/Plug-Ins/Components"

@@ -32,5 +32,16 @@ pre_git_commit() {
     fi
 }
 
-# Alias git commit to include the pre_git_commit function
-alias git-commit='pre_git_commit && git commit'
+# Function to run pre_git_commit and commit with a message
+gcm() {
+    if [[ -z "$1" ]]; then
+        echo -e "${RED}Error: Commit message is required.${RESET}"
+        return 1
+    fi
+
+    # Run pre_git_commit
+    pre_git_commit
+
+    # Perform the git commit with the provided message
+    git commit -m "$1"
+}

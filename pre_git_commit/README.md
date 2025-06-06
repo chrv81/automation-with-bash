@@ -29,13 +29,14 @@ The `pre_git_commit` function is a custom shell function defined in your `.zshrc
 ### **Automatic Execution**
 The `pre_git_commit` function is automatically invoked whenever you use the `git-commit` alias:
 ```bash
-git-commit -m "Your commit message"
+gcm "Your commit message"
 ```
 
 ---
 
 ## Dependencies:
 Ensure `jq` is installed on your system. You can install it using Homebrew:
-Usage:
 
-Use git-commit instead of git commit to automatically run the scripts before committing.
+```bash
+brew install jq
+```

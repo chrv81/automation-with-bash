@@ -124,18 +124,25 @@ main() {
     title=$(prompt_user "text")
 
     # Prompt for directory
+    echo -e "${CYAN}Enter the directory to save the file (absolute path):${RESET}"
     while true; do
-      read -e -r -p "Enter the directory to save the file (absolute path): " save_dir
-      if [ -d "$save_dir" ]; then
+      read -e -r save_dir
+      # default to current directory if empty
+      if [ -z "$save_dir" ]; then
+        save_dir="."
+        break
+      elif [ -d "$save_dir" ]; then
         break
       else
-        echo -e "${RED}Directory does not exist. Please enter a valid directory.${RESET}"
+        echo -e "${RED}Directory does not exist. Please enter a valid directory or leave empty for current folder.${RESET}"
       fi
     done
 
     # Run yt-dlp with user inputs
     yt-dlp -o "${save_dir}/${title}.%(ext)s" "$url"
 
+    # Print out the file path for user
+    echo -e "${GREEN}Your file is saved at: ${PURPLE}${save_dir}/${title}.[extension]${RESET}"
   else
     echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
     install_yt-dlp

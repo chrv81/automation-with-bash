@@ -18,6 +18,17 @@ BOLD='\033[1m'
 UNDERLINE='\033[4m'
 RESET='\033[0m' # No Color
 
+# Printing exiting message
+exit_message() {
+  echo -ne "${RED}Exiting"
+  for i in {1..3}; do
+    echo -ne "."
+    sleep 1
+  done
+  echo -e "${RESET}"
+  exit 1
+}
+
 # Check what OS we are running on
 check_os() {
   current_os=$(uname -s)
@@ -36,23 +47,52 @@ install_yt-dlp() {
     echo -e "${RED}Unknown OS: $os${NC}"
     echo -e "${YELLOW}This script is designed for Linux, macOS, or Windows environments.${NC}"
     echo -e "${WHITE}Please run this script on a supported operating system.${NC}"
-    echo -e "${RED}Exiting...${NC}"
-    exit 1
+    exit_message
   fi
+  echo -e "${GREEN}Installing yt-dlp...${RESET}"
+
+  # Linux using pip or
+  if [ "$current_os" = "Linux" ]; then
+    # check if pip3 is installed
+    if command -v pip3 >/dev/null 2>&1; then
+      pip3 install yt-dlp
+    else
+      echo -e "${YELLOW}pip3 is not installed. Please install pip3 first.${RESET}"
+      exit_message
+    fi
+  elif [ "$current_os" = "macOS" ]; then
+    # check if brew is installed
+    if command -v brew >/dev/null 2>&1; then
+      brew install yt-dlp
+    else
+      echo -e "${YELLOW}Homebrew is not installed. Please install Homebrew first.${RESET}"
+      exit_message
+    fi
+  elif [ "$current_os" = "Windows" ]; then
+    # check if pip is installed
+    if command -v pip >/dev/null 2>&1; then
+      pip install yt-dlp
+    else
+      echo -e "${YELLOW}pip is not installed. Please install pip first.${RESET}"
+      exit_message
+    fi
+  fi
+
+  echo -e "${GREEN}yt-dlp installed successfully!${RESET}"
+  echo -e "${CYAN}Moving on to download process.${RESET}"
 }
 
 # Main function
 main() {
-  echo -e "${CYAN}Running v-downloader script...${RESET}"
+  echo -e "${CYAN}Running v-downloader script!${RESET}"
 
   # Check if yt-dlp is installed
   if command -v yt-dlp >/dev/null 2>&1; then
     echo -e "${GREEN}yt-dlp is installed.${RESET} \nMoving on to download process..."
     echo ""
-    install_yt-dlp
   else
-    echo -e "${YELLOW}yt-dlp is not installed.${RESET} \nPlease install it first."
-
+    echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
+    install_yt-dlp
   fi
 }
 

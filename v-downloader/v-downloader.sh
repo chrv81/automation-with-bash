@@ -51,7 +51,7 @@ install_yt-dlp() {
   fi
   echo -e "${GREEN}Installing yt-dlp...${RESET}"
 
-  # Linux ising pip or
+  # Linux using pip or
   if [ "$current_os" = "Linux" ]; then
     # check if pip3 is installed
     if command -v pip3 >/dev/null 2>&1; then
@@ -91,7 +91,7 @@ main() {
     echo -e "${GREEN}yt-dlp is installed.${RESET} \nMoving on to download process..."
     echo ""
   else
-    echo -e "${YELLOW}yt-dlp is not installed.${RESET} \nPlease install it first."
+    echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
     install_yt-dlp
   fi
 }

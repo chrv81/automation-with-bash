@@ -50,6 +50,8 @@ install_yt-dlp() {
     exit_message
   fi
   echo -e "${GREEN}Installing yt-dlp...${RESET}"
+
+  # Linux ising pip or
   if [ "$current_os" = "Linux" ]; then
     # check if pip3 is installed
     if command -v pip3 >/dev/null 2>&1; then
@@ -67,35 +69,30 @@ install_yt-dlp() {
       exit_message
     fi
   elif [ "$current_os" = "Windows" ]; then
-    # check if wget is installed
-    if command -v wget >/dev/null 2>&1; then
-      sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
-      sudo chmod a+rx /usr/local/bin/yt-dlp
+    # check if pip is installed
+    if command -v pip >/dev/null 2>&1; then
+      pip install yt-dlp
     else
-      echo -e "${YELLOW}wget is not installed. Please install wget first.${RESET}"
+      echo -e "${YELLOW}pip is not installed. Please install pip first.${RESET}"
       exit_message
     fi
-  else
-    echo -e "${RED}Unsupported OS: $current_os${RESET}"
-    exit_message
   fi
 
   echo -e "${GREEN}yt-dlp installed successfully!${RESET}"
-  echo -e "${CYAN}You can now use yt-dlp to download videos and audio.${RESET}"
+  echo -e "${CYAN}Moving on to download process.${RESET}"
 }
 
 # Main function
 main() {
-  echo -e "${CYAN}Running v-downloader script...${RESET}"
+  echo -e "${CYAN}Running v-downloader script!${RESET}"
 
   # Check if yt-dlp is installed
   if command -v yt-dlp >/dev/null 2>&1; then
     echo -e "${GREEN}yt-dlp is installed.${RESET} \nMoving on to download process..."
     echo ""
-    install_yt-dlp
   else
     echo -e "${YELLOW}yt-dlp is not installed.${RESET} \nPlease install it first."
-
+    install_yt-dlp
   fi
 }
 

@@ -82,6 +82,30 @@ install_yt-dlp() {
   echo -e "${CYAN}Moving on to download process.${RESET}"
 }
 
+# Prompt user for any input
+prompt_user() {
+  local type_of_input="$1"
+  local input_value
+
+  while true; do
+    if [ "$type_of_input" = "url" ]; then
+      read -r -p "Enter URL: " input_value
+
+      # Stricter regex: must start with http(s):// and have at least one non-space character after
+      if [[ "$input_value" =~ ^https?://.+ ]]; then
+        echo "$input_value"
+        break
+      fi
+    else
+      read -r -p "Enter text: " input_value
+      if [ -n "$input_value" ]; then
+        echo "$input_value"
+        break
+      fi
+    fi
+  done
+}
+
 # Main function
 main() {
   echo -e "${CYAN}Running v-downloader script!${RESET}"
@@ -90,6 +114,18 @@ main() {
   if command -v yt-dlp >/dev/null 2>&1; then
     echo -e "${GREEN}yt-dlp is installed.${RESET} \nMoving on to download process..."
     echo ""
+
+    # Prompt for URL
+    echo -e "${CYAN}Please enter the video or audio URL to download:${RESET}"
+    url=$(prompt_user "url")
+
+    # Prompt for title
+    echo -e "${CYAN}Please enter the desired file title (without extension):${RESET}"
+    title=$(prompt_user "text")
+
+    # Run yt-dlp with user inputs
+    yt-dlp -o "${title}.%(ext)s" "$url"
+
   else
     echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
     install_yt-dlp

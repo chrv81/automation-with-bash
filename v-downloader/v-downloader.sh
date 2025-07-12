@@ -146,6 +146,7 @@ main() {
   else
     echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
     install_yt-dlp
+    main
   fi
 }
 

@@ -82,16 +82,6 @@ install_yt-dlp() {
   echo -e "${CYAN}Moving on to download process.${RESET}"
 }
 
-# check if input is a valid URL
-validate_url() {
-  if [[ "$1" =~ ^https?://.+ ]]; then
-    return true
-  else
-    echo -e "${RED}Invalid URL. Please enter a valid URL starting with http:// or https://${RESET}"
-    exit_message
-  fi
-}
-
 # Prompt user for any input
 prompt_user() {
   local type_of_input="$1"

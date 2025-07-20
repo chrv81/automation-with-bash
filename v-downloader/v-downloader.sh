@@ -124,11 +124,11 @@ main() {
   url=$(prompt_user "url")
 
   # Prompt for title
-  echo -e "${CYAN}Please enter the desired file title (without extension):${RESET}"
+  echo -e "\n${CYAN}Please enter the desired file title (without extension):${RESET}"
   title=$(prompt_user "text")
 
   # Prompt for directory
-  echo -e "${CYAN}Enter the directory to save the file (absolute path):${RESET}"
+  echo -e "\n${CYAN}Enter (absolute path) directory or press <Enter> to stay in current):${RESET}"
   while true; do
     read -e -r save_dir
     # default to current directory if empty
@@ -146,6 +146,7 @@ main() {
   yt-dlp -o "${save_dir}/${title}.%(ext)s" "$url"
 
   # Print out the file path for user
+  # Find the downloaded file (wildcard for extension)
   echo -e "${GREEN}Your file is saved at: ${PURPLE}${save_dir}/${title}.[extension]${RESET}"
 }
 

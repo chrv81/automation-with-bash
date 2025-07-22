@@ -106,6 +106,25 @@ prompt_user() {
   done
 }
 
+# Convert video for Logic Pro compatibility
+convert_ffmpeg() {
+  # Ask if user wants to convert the file
+  echo -e "\n${CYAN}Do you want to convert the file for Logic Pro compatibility? [y/yes/n/no]:${RESET}"
+  read -r convert_choice
+
+  case "$convert_choice" in
+    [yY] | [yY][eE][sS])
+      echo -e "${GREEN}Converting file using ffmpeg...${RESET}"
+      ffmpeg -i "${save_dir}/${title}.mp4" -c:v copy -c:a aac "${save_dir}/${title}_converted.mp4"
+      echo -e "${GREEN}Conversion complete. File saved at: ${PURPLE}${save_dir}/${title}_converted.mp4${RESET}"
+      ;;
+    *)
+      echo -e "${YELLOW}Skipping conversion step.${RESET}"
+      ;;
+  esac
+}
+
+
 # Main function
 main() {
   echo -e "${CYAN}Running v-downloader script!${RESET}"
@@ -143,7 +162,8 @@ main() {
   done
 
   # Run yt-dlp with user inputs
-  yt-dlp -o "${save_dir}/${title}.%(ext)s" "$url"
+  yt-dlp -f "bestvideo+bestaudio/best" -o "${save_dir}/${title}.%(ext)s" "$url"
+  convert_ffmpeg
 
   # Print out the file path for user
   # Find the downloaded file (wildcard for extension)

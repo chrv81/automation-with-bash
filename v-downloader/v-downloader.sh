@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Author: Chris
-# Date: 11/07/2025
-# Description: This script will run yt-dlp along with ffmpeg command to download any video or audio then convert it to a Logic Pro compatible format.
-# Usage: ./v-downloader.sh
+# This script is used to remove audio plugins from Logic Pro on macOS.
+# It provides a user-friendly interface to select and remove plugins.
+# The script supports both dialog-based and manual input methods.
 
 # Color coding
 GREEN='\033[0;32m'
@@ -18,136 +17,217 @@ BOLD='\033[1m'
 UNDERLINE='\033[4m'
 RESET='\033[0m' # No Color
 
-# Printing exiting message
-exit_message() {
-  echo -ne "${RED}Exiting"
-  for i in {1..3}; do
-    echo -ne "."
-    sleep 1
-  done
-  echo -e "${RESET}"
-  exit 1
+# Variables for repeated paths
+AU_COMPONENTS_SYSTEM="/Library/Audio/Plug-Ins/Components"
+AU_COMPONENTS_USER="$HOME/Library/Audio/Plug-Ins/Components"
+VST_SYSTEM="/Library/Audio/Plug-Ins/VST"
+VST_USER="$HOME/Library/Audio/Plug-Ins/VST"
+VST3_SYSTEM="/Library/Audio/Plug-Ins/VST3"
+VST3_USER="$HOME/Library/Audio/Plug-Ins/VST3"
+AAX_PLUGINS="/Library/Application Support/Avid/Audio/Plug-Ins"
+PREFERENCES_USER="$HOME/Library/Preferences"
+APPLICATION_SUPPORT_USER="$HOME/Library/Application Support"
+APPLICATION_SUPPORT_SYSTEM="/Library/Application Support"
+CACHES_USER="$HOME/Library/Caches"
+LAUNCH_AGENTS_USER="$HOME/Library/LaunchAgents"
+LAUNCH_AGENTS_SYSTEM="/Library/LaunchAgents"
+LAUNCH_DAEMONS_SYSTEM="/Library/LaunchDaemons"
+EXTENSIONS_SYSTEM="/Library/Extensions"
+
+# Exit script with timer
+exit_script() {
+    is_failed=$1  # Add parameter to determine success or failure
+    echo -n "Exiting"
+    for i in {1..3}; do
+        echo -n "."
+        sleep 1
+    done
+    echo ""
+    if [ "$is_failed" = true ]; then
+        exit 1
+    else
+        exit 0
+    fi
 }
 
-# Check what OS we are running on
+# Check if the OS is macOS
 check_os() {
-  current_os=$(uname -s)
-  case "$current_os" in
-  Linux*) echo "Linux" ;;
-  Darwin*) echo "macOS" ;;
-  CYGWIN* | MINGW*) echo "Windows" ;;
-  *) echo "Unknown" ;;
-  esac
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        echo -e "${RED}This script is only for macOS ${RESET}"
+        exit 1
+    fi
 }
 
-# Install `yt-dlp` if not installed
-install_yt-dlp() {
-  current_o=$(check_os)
-  if [ "$os" = "Unknown" ]; then
-    echo -e "${RED}Unknown OS: $os${NC}"
-    echo -e "${YELLOW}This script is designed for Linux, macOS, or Windows environments.${NC}"
-    echo -e "${WHITE}Please run this script on a supported operating system.${NC}"
-    exit_message
-  fi
-  echo -e "${GREEN}Installing yt-dlp...${RESET}"
+# Install `Homebrew`
+install_brew() {
+    echo -e "${RED}Homebrew is required to install dialog.${RESET}"
+    echo -e "${YELLOW}Do you want to install Homebrew? (yes/no)${RESET}"
+    read -r install_brew
 
-  # Linux using pip or
-  if [ "$current_os" = "Linux" ]; then
-    # check if pip3 is installed
-    if command -v pip3 >/dev/null 2>&1; then
-      pip3 install yt-dlp
-    else
-      echo -e "${YELLOW}pip3 is not installed. Please install pip3 first.${RESET}"
-      exit_message
-    fi
-  elif [ "$current_os" = "macOS" ]; then
-    # check if brew is installed
-    if command -v brew >/dev/null 2>&1; then
-      brew install yt-dlp
-    else
-      echo -e "${YELLOW}Homebrew is not installed. Please install Homebrew first.${RESET}"
-      exit_message
-    fi
-  elif [ "$current_os" = "Windows" ]; then
-    # check if pip is installed
-    if command -v pip >/dev/null 2>&1; then
-      pip install yt-dlp
-    else
-      echo -e "${YELLOW}pip is not installed. Please install pip first.${RESET}"
-      exit_message
-    fi
-  fi
-
-  echo -e "${GREEN}yt-dlp installed successfully!${RESET}"
-  echo -e "${CYAN}Moving on to download process.${RESET}"
+    case "${install_brew,,}" in
+        yes|y)
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
+                echo "Failed to install Homebrew. Exiting."
+                exit 1
+            }
+            ;;
+        no|n)
+            echo "Homebrew installation declined. Exiting."
+            exit 1
+            ;;
+        *)
+            echo "Invalid input. Please enter 'yes' or 'no'."
+            install_brew  # Retry if input is invalid
+            ;;
+    esac
 }
 
-# Prompt user for any input
-prompt_user() {
-  local type_of_input="$1"
-  local input_value
-
-  while true; do
-    if [ "$type_of_input" = "url" ]; then
-      read -r -p "Enter URL: " input_value
-
-      # Stricter regex: must start with http(s):// and have at least one non-space character after
-      if [[ "$input_value" =~ ^https?://.+ ]]; then
-        echo "$input_value"
-        break
-      fi
-    else
-      read -r -p "Enter text: " input_value
-      if [ -n "$input_value" ]; then
-        echo "$input_value"
-        break
-      fi
+# Install `dialog` using `Homebrew`
+install_dialog() {
+    if ! command -v brew &> /dev/null; then
+        install_brew
     fi
-  done
+    brew install dialog || {
+        echo "Failed to install dialog. Exiting."
+        exit 1
+    }
+    USE_DIALOG="yes"
 }
 
-# Main function
-main() {
-  echo -e "${CYAN}Running v-downloader script!${RESET}"
+# Check if dialog is installed and offer to install if not
+check_and_install_dialog() {
+    if ! command -v dialog &> /dev/null; then
+        echo "dialog could not be found. Do you want to install it? (yes/no)"
+        read -r install_dialog
 
-  # Check if yt-dlp is installed
-  if ! command -v yt-dlp >/dev/null 2>&1; then
-    echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
-    install_yt-dlp
-  fi
+        case "${install_dialog,,}" in
+            yes|y)
+                install_dialog
+                ;;
+            no|n)
+                echo "dialog installation declined. Falling back to manual input method."
+                USE_DIALOG="no"
+                ;;
+            *)
+                echo "Invalid input. Please enter 'yes' or 'no'."
+                check_and_install_dialog  # Retry if input is invalid
+                ;;
+        esac
 
-  echo -e "${GREEN}yt-dlp is installed.${RESET} \nMoving on to download process..."
-  echo ""
-
-  # Prompt for URL
-  echo -e "${CYAN}Please enter the video or audio URL to download:${RESET}"
-  url=$(prompt_user "url")
-
-  # Prompt for title
-  echo -e "\n${CYAN}Please enter the desired file title (without extension):${RESET}"
-  title=$(prompt_user "text")
-
-  # Prompt for directory
-  echo -e "\n${CYAN}Enter (absolute path) directory or press <Enter> to stay in current):${RESET}"
-  while true; do
-    read -e -r save_dir
-    # default to current directory if empty
-    if [ -z "$save_dir" ]; then
-      save_dir="."
-      break
-    elif [ -d "$save_dir" ]; then
-      break
     else
-      echo -e "${RED}Directory does not exist. Please enter a valid directory or leave empty for current folder.${RESET}"
+        USE_DIALOG="yes"
     fi
-  done
-
-  # Run yt-dlp with user inputs
-  yt-dlp -o "${save_dir}/${title}.%(ext)s" "$url"
-
-  # Print out the file path for user
-  # Find the downloaded file (wildcard for extension)
-  echo -e "${GREEN}Your file is saved at: ${PURPLE}${save_dir}/${title}.[extension]${RESET}"
 }
 
-main
+# List all plugins
+list_plugins() {
+    echo "Listing all plugins..."
+    find "$AU_COMPONENTS_SYSTEM" "$AU_COMPONENTS_USER" "$VST_SYSTEM" "$VST_USER" "$VST3_SYSTEM" "$VST3_USER" "$AAX_PLUGINS" -type f \( -name "*.component" -o -name "*.vst" -o -name "*.vst3" -o -name "*.aaxplugin" \) 2>/dev/null
+}
+
+# Generate manufacturer list
+generate_manufacturer_list() {
+    manufacturers=()
+    
+    while IFS= read -r plugin; do
+        manufacturer=$(basename "$(dirname "$plugin")")
+        [[ " ${manufacturers[*]} " =~ " $manufacturer " ]] || manufacturers+=("$manufacturer")
+    done < <(find "$AU_COMPONENTS_SYSTEM" "$AU_COMPONENTS_USER" "$VST_SYSTEM" "$VST_USER" "$VST3_SYSTEM" "$VST3_USER" "$AAX_PLUGINS" -type f \( -name "*.component" -o -name "*.vst" -o -name "*.vst3" -o -name "*.aaxplugin" \) 2>/dev/null)
+}
+
+# Remove selected plugin
+remove_plugin() {
+    local plugin_name=$1
+    local manufacturer_name=$2
+
+    echo "Removing plugin: $plugin_name from $manufacturer_name"
+    sudo rm -rf \
+        "$AU_COMPONENTS_SYSTEM/$plugin_name.component" \
+        "$AU_COMPONENTS_USER/$plugin_name.component" \
+        "$VST_SYSTEM/$plugin_name.vst" \
+        "$VST_USER/$plugin_name.vst" \
+        "$VST3_SYSTEM/$plugin_name.vst3" \
+        "$VST3_USER/$plugin_name.vst3" \
+        "$AAX_PLUGINS/$plugin_name.aaxplugin" \
+        "$PREFERENCES_USER/com.$manufacturer_name.$plugin_name.plist" \
+        "$APPLICATION_SUPPORT_USER/$manufacturer_name/$plugin_name" \
+        "$CACHES_USER/com.$manufacturer_name.$plugin_name" \
+        "$CACHES_USER/AudioUnitCache/com.apple.audiounits.cache" \
+        "$CACHES_USER/com.apple.audiounits.sandboxed.cache" \
+        "$CACHES_USER/com.apple.logic10" \
+        "$APPLICATION_SUPPORT_USER/$manufacturer_name" \
+        "$APPLICATION_SUPPORT_SYSTEM/$manufacturer_name" \
+        "$LAUNCH_AGENTS_USER/com.$manufacturer_name.*" \
+        "$LAUNCH_AGENTS_SYSTEM/com.$manufacturer_name.*" \
+        "$LAUNCH_DAEMONS_SYSTEM/com.$manufacturer_name.*"
+    sudo kextunload "$EXTENSIONS_SYSTEM/$plugin_name.kext"
+    sudo rm -rf "$EXTENSIONS_SYSTEM/$plugin_name.kext"
+    sudo killall -9 AudioComponentRegistrar
+    sudo rm -rf "$CACHES_USER/com.apple.audiounits.cache" "$CACHES_USER/com.apple.audiounits.sandboxed.cache"
+    echo "Plugin $plugin_name from $manufacturer_name has been removed. Please restart your Mac and rescan plugins in Logic Pro."
+}
+
+# Exit script with animation
+exit_script() {
+    echo -n "Exiting script"
+    for i in {1..3}; do
+        echo -n "."
+        sleep 1
+    done
+    echo ""
+    exit 0
+}
+
+# Main script loop with dialog
+main_dialog() {
+    while true; do
+        clear
+        echo "Welcome to the Plugin Removal Script!"
+        list_plugins
+
+        manufacturer_name=$(dialog --stdout --menu "Select the manufacturer" 15 50 4 "${manufacturers[@]}" "Quit" "Exit the script")
+        [[ "$manufacturer_name" == "Quit" ]] && exit_script
+
+        plugin_name=$(dialog --stdout --inputbox "Enter the name of the plugin you want to remove (e.g., Padshop, Retrologue):" 8 50)
+        [[ -z "$plugin_name" ]] && { echo "No plugin name entered. Please try again."; continue; }
+
+        remove_plugin "$plugin_name" "$manufacturer_name"
+
+        answer=$(dialog --stdout --menu "Do you want to remove another plugin?" 10 30 2 "yes" "" "no" "")
+        [[ "$answer" != "yes" ]] && exit_script
+    done
+}
+
+# Main script loop with manual input
+main_manual() {
+    while true; do
+        clear
+        echo "Welcome to the Plugin Removal Script!"
+        list_plugins
+
+        echo -e "\nEnter the name of the plugin you want to remove (e.g., Padshop, Retrologue) or type 'quit' or 'exit' to leave:"
+        read -r plugin_name
+        [[ "$plugin_name" == "quit" || "$plugin_name" == "exit" ]] && exit_script
+
+        echo -e "\nEnter the manufacturer name (e.g., steinberg, toontrack, fabfilter):"
+        read -r manufacturer_name
+        [[ -z "$manufacturer_name" ]] && { echo "No manufacturer name entered. Please try again."; continue; }
+
+        remove_plugin "$plugin_name" "$manufacturer_name"
+
+        echo -e "\nDo you want to remove another plugin? (yes/no)"
+        read -r answer
+        [[ "$answer" != "yes" ]] && exit_script
+    done
+}
+
+# Script execution starts here
+check_os
+check_and_install_dialog
+generate_manufacturer_list
+
+if [[ "$USE_DIALOG" == "yes" ]]; then
+    main_dialog
+else
+    main_manual
+fi

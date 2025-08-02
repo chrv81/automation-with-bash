@@ -106,6 +106,36 @@ prompt_user() {
   done
 }
 
+# Convert video for Logic Pro compatibility
+convert_ffmpeg() {
+  # Ask if user wants to convert the file
+  echo -e "\n${CYAN}Do you want to convert the file for Logic Pro compatibility? [y/yes/n/no]:${RESET}"
+  read -r convert_choice
+
+  case "$convert_choice" in
+    [yY] | [yY][eE][sS])
+      echo -e "${GREEN}Converting file using ffmpeg...${RESET}"
+      if [ -z "$input_file" ]; then
+        echo -e "${RED}Error: Downloaded file not found for conversion.${RESET}"
+        exit_message
+      fi
+      # Generate output filename based on input filename
+      output_file="${input_file%.*}_converted.mp4"
+      ffmpeg -i "$input_file" -c:v copy -c:a aac -b:a 320k -ar 48000 -ac 2 "$output_file"
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}Error: ffmpeg conversion failed.${RESET}"
+        exit_message
+      else
+        echo -e "${GREEN}Conversion complete. File saved at: ${PURPLE}${output_file}${RESET}"
+      fi
+      ;;
+    *)
+      echo -e "${YELLOW}Skipping conversion step.${RESET}"
+      ;;
+  esac
+}
+
+
 # Main function
 main() {
   echo -e "${CYAN}Running v-downloader script!${RESET}"
@@ -143,7 +173,8 @@ main() {
   done
 
   # Run yt-dlp with user inputs
-  yt-dlp -o "${save_dir}/${title}.%(ext)s" "$url"
+  yt-dlp -f "bestvideo+bestaudio/best" -o "${save_dir}/${title}.%(ext)s" "$url"
+  convert_ffmpeg
 
   # Print out the file path for user
   # Find the downloaded file (wildcard for extension)

@@ -122,7 +122,12 @@ convert_ffmpeg() {
       # Generate output filename based on input filename
       output_file="${input_file%.*}_converted.mp4"
       ffmpeg -i "$input_file" -c:v copy -c:a aac "$output_file"
-      echo -e "${GREEN}Conversion complete. File saved at: ${PURPLE}${output_file}${RESET}"
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}Error: ffmpeg conversion failed.${RESET}"
+        exit_message
+      else
+        echo -e "${GREEN}Conversion complete. File saved at: ${PURPLE}${output_file}${RESET}"
+      fi
       ;;
     *)
       echo -e "${YELLOW}Skipping conversion step.${RESET}"

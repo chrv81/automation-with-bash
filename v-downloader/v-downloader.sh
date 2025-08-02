@@ -121,7 +121,7 @@ convert_ffmpeg() {
       fi
       # Generate output filename based on input filename
       output_file="${input_file%.*}_converted.mp4"
-      ffmpeg -i "$input_file" -c:v copy -c:a aac "$output_file"
+      ffmpeg -i "$input_file" -c:v copy -c:a aac -b:a 320k -ar 48000 -ac 2 "$output_file"
       if [ $? -ne 0 ]; then
         echo -e "${RED}Error: ffmpeg conversion failed.${RESET}"
         exit_message

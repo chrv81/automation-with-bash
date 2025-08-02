@@ -115,13 +115,12 @@ convert_ffmpeg() {
   case "$convert_choice" in
     [yY] | [yY][eE][sS])
       echo -e "${GREEN}Converting file using ffmpeg...${RESET}"
-      # Find the downloaded file with any extension
-      input_file=$(find "${save_dir}" -maxdepth 1 -type f -name "${title}.*" | head -n 1)
       if [ -z "$input_file" ]; then
         echo -e "${RED}Error: Downloaded file not found for conversion.${RESET}"
         exit_message
       fi
-      output_file="${save_dir}/${title}_converted.mp4"
+      # Generate output filename based on input filename
+      output_file="${input_file%.*}_converted.mp4"
       ffmpeg -i "$input_file" -c:v copy -c:a aac "$output_file"
       echo -e "${GREEN}Conversion complete. File saved at: ${PURPLE}${output_file}${RESET}"
       ;;

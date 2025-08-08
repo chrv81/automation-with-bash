@@ -174,11 +174,20 @@ main() {
 
   # Run yt-dlp with user inputs
   yt-dlp -f "bestvideo+bestaudio/best" -o "${save_dir}/${title}.%(ext)s" "$url"
-  convert_ffmpeg
 
-  # Print out the file path for user
+  # Wait a bit to ensure file is written
+  sleep 3
+
   # Find the downloaded file (wildcard for extension)
-  echo -e "${GREEN}Your file is saved at: ${PURPLE}${save_dir}/${title}.[extension]${RESET}"
+  input_file=$(ls "${save_dir}/${title}."* 2>/dev/null | head -n 1)
+
+  if [ -n "$input_file" ]; then
+    convert_ffmpeg
+    echo -e "${GREEN}Your file is saved at: ${PURPLE}${input_file}${RESET}"
+  else
+    echo -e "${RED}Downloaded file not found.${RESET}"
+  fi
+
 }
 
 main

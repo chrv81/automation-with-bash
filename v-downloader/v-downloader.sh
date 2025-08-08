@@ -182,7 +182,6 @@ main() {
   input_file=$(ls "${save_dir}/${title}."* 2>/dev/null | head -n 1)
 
   if [ -n "$input_file" ]; then
-    extension="${input_file##*.}"
     convert_ffmpeg
     echo -e "${GREEN}Your file is saved at: ${PURPLE}${input_file}${RESET}"
   else

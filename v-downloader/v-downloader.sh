@@ -4,6 +4,8 @@
 # Date: 11/07/2025
 # Description: This script will run yt-dlp along with ffmpeg command to download any video or audio then convert it to a Logic Pro compatible format.
 # Usage: ./v-downloader.sh
+# Disclaimer: This script is for educational purposes only. Ensure you have the right to download and convert any content.
+# Note: You must have yt-dlp and ffmpeg installed on your system for this script to work.
 
 # Color coding
 GREEN='\033[0;32m'
@@ -89,7 +91,7 @@ prompt_user() {
 
   while true; do
     if [ "$type_of_input" = "url" ]; then
-      read -r -p "Enter URL: " input_value
+      read -r -p "URL: " input_value
 
       # Stricter regex: must start with http(s):// and have at least one non-space character after
       if [[ "$input_value" =~ ^https?://.+ ]]; then
@@ -97,7 +99,7 @@ prompt_user() {
         break
       fi
     else
-      read -r -p "Enter text: " input_value
+      read -r -p "Title: " input_value
       if [ -n "$input_value" ]; then
         echo "$input_value"
         break
@@ -136,25 +138,52 @@ convert_ffmpeg() {
 }
 
 
+legal_prompt() {
+  clear
+  echo "   _           ____  ____  _      _      _     ____  ____  ____ "
+  echo "/ \\ |\\      /  _ \\/  _ \\/ \\  /|/ \\  /|/ \\   /  _ \\/  _ \\/  _ \\"
+  echo "| | //_____ | | \\|| / \\|| |  ||| |\\ ||| |   | / \\|| / \\|| | \\|"
+  echo "| \\// \\____\\| |_/|| \\_/|| |/\\||| | \\||| |_\\| \\_/|| |-||| |_/|"
+  echo "\\__/        \\____/\\____/\\_/  \\|\\_/  \\|\\____/\\____/\\_/ \\|\\____/"
+  echo ""
+  echo -e "\n\n(c) Copyright - Chris (Viettu) 2025 - All rights reserved.\n\n"
+
+  echo -e "${YELLOW}================== USER AGREEMENT =================="
+  echo ""
+  echo "By using this script, you agree to comply with all applicable copyright laws and the terms of service of the platforms from which you download content."
+  echo "This script is intended for use with videos that are either in the public domain or licensed under Creative Commons."
+  echo "You are solely responsible for ensuring that your use of this script complies with all relevant laws and regulations."
+  echo "The author of this script assumes no responsibility for any misuse or illegal activities conducted using this tool."
+  echo "Please use this script ethically and respect the rights of content creators."
+  echo ""
+  echo "================== DISCLAIMER =================="
+  echo ""
+  echo "The developer of this script is not responsible for any legal issues arising from the misuse of this tool."
+  echo "Nor the developer is affiliated with or endorsed by any video hosting platforms."
+  echo "Users are encouraged to verify the copyright status of any content before downloading or using it."
+  echo "Always seek permission from content creators when in doubt."
+  echo ""
+  echo "========================================================="
+  echo -e "${RESET}"
+}
+
 # Main function
 main() {
-  echo -e "${CYAN}Running v-downloader script!${RESET}"
+
+  legal_prompt
 
   # Check if yt-dlp is installed
   if ! command -v yt-dlp >/dev/null 2>&1; then
-    echo -e "${YELLOW}yt-dlp is not installed.${RESET}"
+    echo -e "${RED}yt-dlp is not installed.${RESET}"
     install_yt-dlp
   fi
 
-  echo -e "${GREEN}yt-dlp is installed.${RESET} \nMoving on to download process..."
-  echo ""
-
   # Prompt for URL
-  echo -e "${CYAN}Please enter the video or audio URL to download:${RESET}"
+  echo -e "\nPlease enter the video or audio URL to download:"
   url=$(prompt_user "url")
 
   # Prompt for title
-  echo -e "\n${CYAN}Please enter the desired file title (without extension):${RESET}"
+  echo -e "\nPlease enter the desired file title (without extension):"
   title=$(prompt_user "text")
 
   # Prompt for directory

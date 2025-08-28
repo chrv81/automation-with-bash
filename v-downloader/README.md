@@ -40,18 +40,41 @@ A Bash script to download videos or audio from a URL using [`yt-dlp`](https://gi
 ## Example
 
 ```text
-$ ./v-downloader.sh
-Running v-downloader script!
-yt-dlp is installed.
-Moving on to download process...
+   _           ____  ____  _      _      _     ____  ____  ____ 
+/ \ |\      /  _ \/  _ \/ \  /|/ \  /|/ \   /  _ \/  _ \/  _ \
+| | //_____ | | \|| / \|| |  ||| |\ ||| |   | / \|| / \|| | \|
+| \// \____\| |_/|| \_/|| |/\||| | \||| |_\| \_/|| |-||| |_/|
+\__/        \____/\____/\_/  \|\_/  \|\____/\____/\_/ \|\____/
+
+
+
+(c) Copyright - Chris (Viettu) 2025 - All rights reserved.
+
+
+================== USER AGREEMENT ==================
+
+By using this script, you agree to comply with all applicable copyright laws and the terms of service of the platforms from which you download content.
+This script is intended for use with videos that are either in the public domain or licensed under Creative Commons.
+You are solely responsible for ensuring that your use of this script complies with all relevant laws and regulations.
+The author of this script assumes no responsibility for any misuse or illegal activities conducted using this tool.
+Please use this script ethically and respect the rights of content creators.
+
+================== DISCLAIMER ==================
+
+The developer of this script is not responsible for any legal issues arising from the misuse of this tool.
+Nor the developer is affiliated with or endorsed by any video hosting platforms.
+Users are encouraged to verify the copyright status of any content before downloading or using it.
+Always seek permission from content creators when in doubt.
+
+=========================================================
+
+yt-dlp is not installed.
+Installing yt-dlp...
+yt-dlp installed successfully!
+Moving on to download process.
 
 Please enter the video or audio URL to download:
-Enter URL: https://example.com/video
-Please enter the desired file title (without extension):
-Enter text: my_video
-Enter the directory to save the file (absolute path):
-[Press Tab to autocomplete or Enter for current folder]
-Your file is saved at: ./my_video.[extension]
+URL: 
 ```
 
 ## Notes
